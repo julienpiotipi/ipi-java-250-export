@@ -6,6 +6,7 @@ import com.example.demo.entity.LigneFacture;
 import com.example.demo.service.ClientService;
 import com.example.demo.service.FactureService;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -140,8 +141,8 @@ public class ExportController {
                     Cell prix = headerRow.createCell(2);
                     prix.setCellValue("Prix Unitaire");
 
-                    Cell total = headerRow.createCell(4);
-                    total.setCellValue("Total");
+                    Cell totalLigne = headerRow.createCell(3);
+                    totalLigne.setCellValue("Total Ligne");
 
                     Set<LigneFacture> lignesf = facture.getLigneFactures();
 
@@ -156,15 +157,31 @@ public class ExportController {
                         cellArticle.setCellValue(lignef.getArticle().getLibelle());
                         Cell cellQuantite = l.createCell(1);
                         cellQuantite.setCellValue(lignef.getQuantite());
-                        Cell cellPrix = l.createCell(2);
-                        cellPrix.setCellValue(lignef.getArticle().getPrix());
-                        Cell cellTotal = l.createCell(4);
-                        cellTotal.setCellValue(PrixTotal);
+                        Cell cellPrixLigne = l.createCell(2);
+                        cellPrixLigne.setCellValue(lignef.getArticle().getPrix());
+                        Cell prixtotal = l.createCell(3);
+                        prixtotal.setCellValue(PrixTotal);
+
+                        Row totalTout = sheet.createRow(i++);
+                        totalTout.createCell(2).setCellValue("Total :");
+                        CellRangeAddress cellRangeAddress = new CellRangeAddress(
+                                totalTout.getRowNum(), totalTout.getRowNum(),
+                                totalTout.getFirstCellNum(), (totalTout.getFirstCellNum() + 1));
+                        sheet.addMergedRegion(cellRangeAddress);
 
                         //Style pour les cellules
-                        /*CellStyle cellstyle = workbook.createCellStyle();
+                        CellStyle cellstyle = workbook.createCellStyle();
+                        Font font = workbook.createFont();
                         //Style gras pour le texte
-                        cellstyle.setFont(font);*/
+                        cellstyle.setFont(font);
+                        font.setBold(true);
+                        Cell cellTotal = l.createCell(4);
+                        cellTotal.setCellValue(facture.getTotal());
+                        cellTotal.setCellStyle(cellstyle);
+
+                        //Style pour la couleur des cellules
+                        CellStyle cellstyle1 = workbook.createCellStyle();
+                        /*CellStyle rouge =*/
                     }
                 }
             }
