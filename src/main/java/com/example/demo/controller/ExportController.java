@@ -122,10 +122,11 @@ public class ExportController {
 
         for (Client clients : client) {
             //boucle sur tous les clients
+            Sheet sheetClient = workbook.createSheet(clients.getNom()+ " " + clients.getPrenom());
             for (Facture facture : factures) {
                 //boucle sur toutes les factures pour recup toutes
                 if (facture.getClient().getId() == clients.getId()) {
-                    Sheet sheet = workbook.createSheet("Facture " + facture.getId() + " " + clients.getNom());
+                    Sheet sheet = workbook.createSheet("Facture " + facture.getId()/* + " " + clients.getNom()*/);
 
                     Row headerRow = sheet.createRow(0);
 
@@ -159,6 +160,11 @@ public class ExportController {
                         cellPrix.setCellValue(lignef.getArticle().getPrix());
                         Cell cellTotal = l.createCell(4);
                         cellTotal.setCellValue(PrixTotal);
+
+                        //Style pour les cellules
+                        /*CellStyle cellstyle = workbook.createCellStyle();
+                        //Style gras pour le texte
+                        cellstyle.setFont(font);*/
                     }
                 }
             }
