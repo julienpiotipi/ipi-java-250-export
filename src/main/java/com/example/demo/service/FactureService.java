@@ -20,4 +20,8 @@ public class FactureService {
     public List<Facture> findAllFacture() {
         return factureRepository.findAll();
     }
+
+    public Facture findById(Long factureId) {
+        return factureRepository.findById(factureId).get();
+    }
 }
