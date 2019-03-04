@@ -1,7 +1,10 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.Client;
+import com.example.demo.entity.Facture;
+import com.example.demo.entity.LigneFacture;
 import com.example.demo.service.ClientService;
+import com.example.demo.service.FactureService;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,12 +16,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Controlleur pour réaliser les exports.
@@ -29,6 +32,9 @@ public class ExportController {
 
     @Autowired
     private ClientService clientService;
+
+    @Autowired
+    private FactureService factureService;
 
 
     @GetMapping("/clients/csv")
@@ -110,22 +116,54 @@ public class ExportController {
         response.setHeader("Content-Disposition", "attachment; filename=\"factures.xlsx\"");
 
         Workbook workbook = new XSSFWorkbook();
-        Sheet sheet = workbook.createSheet("Factures");
 
-        Row headerRow = sheet.createRow(0);
+        List<Client> client = clientService.findAllClients();
+        List<Facture> factures = factureService.findAllFacture();
 
-        Cell cellHeaderId = headerRow.createCell(0);
-        cellHeaderId.setCellValue("Id");
+        for (Client clients : client) {
+            //boucle sur tous les clients
+            for (Facture facture : factures) {
+                //boucle sur toutes les factures pour recup toutes
+                if (facture.getClient().getId() == clients.getId()) {
+                    Sheet sheet = workbook.createSheet("Facture " + facture.getId() + " " + clients.getNom());
 
-        int i = 1;
-        //for (Client client : allClients) {
-        //   Row row = sheet.createRow(i);
+                    Row headerRow = sheet.createRow(0);
 
-        // i++;
-        //}
+                    //affiche le nom dans le cellules sélectionnées
+                    Cell cellHeaderId = headerRow.createCell(0);
+                    cellHeaderId.setCellValue("Article(s)");
 
+                    Cell quantite = headerRow.createCell(1);
+                    quantite.setCellValue("Qantité");
+
+                    Cell prix = headerRow.createCell(2);
+                    prix.setCellValue("Prix Unitaire");
+
+                    Cell total = headerRow.createCell(4);
+                    total.setCellValue("Total");
+
+                    Set<LigneFacture> lignesf = facture.getLigneFactures();
+
+                    int i = 1;
+                    for (LigneFacture lignef : lignesf) {
+                        Row l = sheet.createRow(i++);
+
+                        Double PrixTotal = lignef.getArticle().getPrix() * lignef.getQuantite();
+
+                        //affiche les résultats
+                        Cell cellArticle = l.createCell(0);
+                        cellArticle.setCellValue(lignef.getArticle().getLibelle());
+                        Cell cellQuantite = l.createCell(1);
+                        cellQuantite.setCellValue(lignef.getQuantite());
+                        Cell cellPrix = l.createCell(2);
+                        cellPrix.setCellValue(lignef.getArticle().getPrix());
+                        Cell cellTotal = l.createCell(4);
+                        cellTotal.setCellValue(PrixTotal);
+                    }
+                }
+            }
+        }
         workbook.write(response.getOutputStream());
         workbook.close();
-
+        }
     }
-}
